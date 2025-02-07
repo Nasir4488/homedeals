@@ -1,0 +1,15 @@
+import 'package:flutter/material.dart';
+const Color blackColor = Color(0xFF000000);
+const Color whiteColor = Color(0xFFFFFFFF);
+const Color greenColor = Color(0xFF439B49);
+const Color darkGreyColor = Color(0xFF4C4C4C);
+const Color greyColor = Color(0xFFEEEEEE);
+const Color screenbackgroundColor = Color(0xFFDEDEDE);
+const Color redColor = Color(0xFFFF0000);
+const Color lightGreyColor = Color(0xFFF5F0F0);
+const Color yelloColor = Color(0xFFFEED01);
+const Color greyCreateListingColor = Color(0xFFDEDEDE);
+const Color checkinTextColor = Color(0xFFA88134);
+const Color blueColor = Color(0xff00AEFF);
+const Color footerColor_1 = Color(0xFF01335A);
+const Color footerColor_2 = Color(0xFF014275);

@@ -1,0 +1,1 @@
+const String signUpUrl = 'http://localhost:3000/api/v1/users/signup';

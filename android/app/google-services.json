@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "495252039954",
+    "project_id": "homedeals-d6dec",
+    "storage_bucket": "homedeals-d6dec.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:495252039954:android:8a1a55ec333ed20b572bcb",
+        "android_client_info": {
+          "package_name": "com.homedeals.homedeals"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXKogjCYBFxY6xP2KSZaF1DawO9fpm9oA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
