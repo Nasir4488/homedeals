@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -63,8 +64,13 @@ class _DiscoverPropertyState extends State<DiscoverProperty> {
                 SizedBox(),
                 Text(
                   "Discover Our Featured Listings",
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyLarge!
+                      .copyWith(color: Colors.black,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0,
+                ),),
                 SizedBox(height: 5),
                 Text(
                   "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
@@ -77,37 +83,41 @@ class _DiscoverPropertyState extends State<DiscoverProperty> {
                     width: screenWidth * 0.9,
                     alignment: Alignment.center,
                     height: screenheight * 0.7,
-                    child: CarouselSlider(
-                      options: CarouselOptions(
-                        height: 500,
-                        aspectRatio: 16 / 9,
-                        viewportFraction: 1 / 3,
-                        initialPage: 0,
-                        enableInfiniteScroll: true,
-                        reverse: false,
-                        autoPlay: true,
-                        autoPlayInterval: Duration(seconds: 8),
-                        autoPlayAnimationDuration: Duration(milliseconds: 800),
-                        autoPlayCurve: Curves.fastOutSlowIn,
-                        scrollDirection: Axis.horizontal,
-                      ),
-                      items: snapshot.data!.map((property) {
-                        return Builder(
-                          builder: (context) {
-                            return InkWell(
-                              onTap: () async {
-                                var box = Hive.box('propertyBox');
-                                await box.put('selectedProperty', property);
-
-                                // Navigate to the single property screen
-                                // Get.toNamed(AllRoutes.singlePropertyScreen, arguments: property);
+                     child: NotificationListener<ScrollUpdateNotification>(
+                        onNotification: (notification) {
+                          if (notification.metrics.axis == Axis.vertical) {
+                            return true; // Absorb vertical scroll so the page scrolls normally
+                          }
+                          return false; // Allow horizontal scroll for the carousel
+                        },
+                        child: CarouselSlider(
+                          options: CarouselOptions(
+                            scrollPhysics: NeverScrollableScrollPhysics(),
+                            pauseAutoPlayOnTouch: true,
+                            height: 500,
+                            aspectRatio: 16 / 9,
+                            viewportFraction: 0.33,
+                            initialPage: 0,
+                            enableInfiniteScroll: true,
+                            reverse: false,
+                            autoPlay: true,
+                            autoPlayInterval: Duration(seconds: 8),
+                            autoPlayAnimationDuration: Duration(milliseconds: 800),
+                            autoPlayCurve: Curves.fastOutSlowIn,
+                            scrollDirection: Axis.horizontal,
+                          ),
+                          items: snapshot.data!.map((property) {
+                            return Builder(
+                              builder: (context) {
+                                return GestureDetector(
+                                  onTap: () => Get.toNamed(AllRoutes.singlePropertyScreen, arguments: property),
+                                  child: DiscoverListing(property: property),
+                                );
                               },
-                              child: DiscoverListing(property: property),
                             );
-                          },
-                        );
-                      }).toList(),
-                    ),
+                          }).toList(),
+                        ),
+                      )
                   ),
                 ),
                 SizedBox(height: 100),
@@ -131,27 +141,7 @@ class DiscoverListing extends StatefulWidget {
 
 class _DiscoverListingState extends State<DiscoverListing> {
   bool isHovered = false;
-  bool isFavorite = false;
   var homeController = Get.put(HomeController());
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFavoriteStatus();
-  }
-
-  Future<void> _loadFavoriteStatus() async {
-    bool favoriteStatus = await getFavoriteProperties();
-    setState(() {
-      isFavorite = favoriteStatus;
-    });
-  }
-
-  Future<bool> getFavoriteProperties() async {
-    List<Property> favProperties = await homeController.getFavProperties(widget.property.userId,);
-    return favProperties.any((favProperty) => favProperty.id == widget.property.id);
-  }
-
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
@@ -187,16 +177,17 @@ class _DiscoverListingState extends State<DiscoverListing> {
                         topRight: Radius.circular(8),
                         topLeft: Radius.circular(8),
                       ),
-                      child: CachedNetworkImage(
-                        imageUrl: widget.property.photos![0],
-                        fit: BoxFit.fill,
-                        filterQuality: FilterQuality.medium,
-                        placeholder: (context, url) => Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                        errorWidget: (context, url, error) => Center(
-                          child: Icon(Icons.error),
-                        ),
+                      child:
+
+                        IgnorePointer(
+                          ignoring: false, // Set to true if you don't want it to block interactions
+                          child: Image.network(
+                            widget.property.photos != null && widget.property.photos!.isNotEmpty
+                                ? widget.property.photos![0]
+                                : "https://via.placeholder.com/300",
+                            fit: BoxFit.cover,
+                            filterQuality: FilterQuality.medium,
+                          ),
                       ),
                     ),
                   ),
@@ -260,40 +251,7 @@ class _DiscoverListingState extends State<DiscoverListing> {
                               ),
                             ),
                             SizedBox(width: 2),
-                            InkWell(
-                              onTap: () async {
-                                // Toggle favorite status
-                                if (isFavorite) {
-                                  homeController.removeFavorite(Favorite(userId: widget.property.userId, propertyId: widget.property.id.toString()));
-                                  setState(() {
 
-                                  });
-                                } else {
-                                  homeController.addFavorite(Favorite(userId: widget.property.userId, propertyId: widget.property.id.toString()));
-                                  setState(() {
-
-                                  });
-                                }
-                                setState(() {
-                                  isFavorite = !isFavorite;
-                                });
-                              },
-                              child: Container(
-                                padding: EdgeInsets.all(4),
-                                height: 25,
-                                width: 25,
-                                decoration: BoxDecoration(
-                                  color: isFavorite
-                                      ? blueColor
-                                      : Colors.black.withOpacity(0.6),
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: Image.asset(
-                                  "assets/icons/heart.png",
-                                  color: whiteColor,
-                                ),
-                              ),
-                            ),
                             SizedBox(width: 2),
                             InkWell(
                               onTap: (){

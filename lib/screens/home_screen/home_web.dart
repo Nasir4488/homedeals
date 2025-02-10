@@ -25,7 +25,6 @@ class _HomeWebState extends State<HomeWeb> {
         child: Column(
           children: [
             HomeHeader(),
-            SizedBox(height: 50,),
             DiscoverProperty(),
             SizedBox(height: 30,),
             ComercialProperties(),
