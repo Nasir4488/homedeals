@@ -159,18 +159,7 @@ List<String> developersProjects=[
   "Comerical",
   "Land",
 ];
-List<String> countriesList=[
-  "Default",
-  "Pakistan",
-  "Romania",
-  "Czzech Republic",
-  "Cyprus",
-  "Germany",
-  "Autria",
-  "France",
-  "Spain",
-  "Itly"
-];
+
 List<int> bedrooms = [ 1, 2, 3, 4, 5, 6, 7, 8, 9];
 List<int> bathrooms = [ 1, 2, 3, 4, 5, 6, 7, 8, 9];
 List<int> prices = [ 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000,10000];

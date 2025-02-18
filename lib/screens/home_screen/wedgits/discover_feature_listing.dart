@@ -21,7 +21,7 @@ class _DiscoverPropertyState extends State<DiscoverProperty> {
   var homeController = Get.put(HomeController());
 
   Future<List<Property>> _fetchProperties() async {
-    await homeController.searchProperties({"isfeatured": true});
+    List<Property> properties = await homeController.searchProperties({"isfeatured": true});
     return homeController.properties;
   }
 
@@ -110,7 +110,7 @@ class _DiscoverPropertyState extends State<DiscoverProperty> {
                             return Builder(
                               builder: (context) {
                                 return GestureDetector(
-                                  onTap: () => Get.toNamed(AllRoutes.singlePropertyScreen, arguments: property),
+                                  onTap: () => Get.toNamed(AllRoutes.singlePropertyScreen,arguments: property),
                                   child: DiscoverListing(property: property),
                                 );
                               },
@@ -169,6 +169,7 @@ class _DiscoverListingState extends State<DiscoverListing> {
               children: [
                 SizedBox(height: 10),
                 GestureDetector(
+
                   child: Container(
                     width: Get.width,
                     height: Get.height * 0.35,
@@ -178,7 +179,6 @@ class _DiscoverListingState extends State<DiscoverListing> {
                         topLeft: Radius.circular(8),
                       ),
                       child:
-
                         IgnorePointer(
                           ignoring: false, // Set to true if you don't want it to block interactions
                           child: Image.network(
@@ -254,9 +254,6 @@ class _DiscoverListingState extends State<DiscoverListing> {
 
                             SizedBox(width: 2),
                             InkWell(
-                              onTap: (){
-                                print(widget.property.photos![0]);
-                              },
                               child: Container(
                                 height: 25,
                                 width: 25,

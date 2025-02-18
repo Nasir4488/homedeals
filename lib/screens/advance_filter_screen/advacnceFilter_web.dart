@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart' as gett;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:homedeals/cores/advanceFilterController.dart';
+import 'package:homedeals/cores/countryController.dart';
 import 'package:homedeals/models/property_model.dart';
 import 'package:homedeals/screens/advance_filter_screen/widgets/buildDropdown.dart';
 import 'package:homedeals/screens/advance_filter_screen/widgets/filteredPropertiesView.dart';
@@ -15,15 +16,15 @@ import 'package:syncfusion_flutter_sliders/sliders.dart';
 import '../../utils/textTheams.dart';
 
 class AdvanceFilterWeb extends StatefulWidget {
-  final String? label;
   final String? status;
   final String? type;
   final int? price;
   final String? country;
   final int? bedrooms;
+  final String? city;
 
   const AdvanceFilterWeb(
-      {Key? key, this.status, this.type, this.label, this.price, this.country,this.bedrooms})
+      {Key? key, this.status, this.type, this.price, this.country,this.bedrooms,this.city})
       : super(key: key);
 
   @override
@@ -36,31 +37,31 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
   // SfRangeValues? _priceValues;
   SfRangeValues _priceValues = SfRangeValues(0.0, 10000.0);
   SfRangeValues _areaValues = SfRangeValues(0.0, 10000.0);
+
   String selectedBedroom = "Bedrooms";
   String selectedBathroom = "Bathrooms";
   bool radiusEnabled = true;
   int currentRadius = 0;
   int bedroom=bedrooms[0];
   String selectedSort = sorts[0];
-  List<String> bedroomOptions =
-      ["Bedrooms"] + bedrooms.map((b) => b.toString()).toList();
-  List<String> bathroomOptions =
-      ["Bathrooms"] + bathrooms.map((b) => b.toString()).toList();
-  String selectedLabel = gett.Get.parameters['label'] ?? label[0];
-  String selectedCountry = gett.Get.parameters['country'] ?? countriesList[0];
+
+  List<String> bedroomOptions = ["Bedrooms"] + bedrooms.map((b) => b.toString()).toList();
+  List<String> bathroomOptions = ["Bathrooms"] + bathrooms.map((b) => b.toString()).toList();
+
+  String selectedLabel = label[0];
+  String selectedCountry = gett.Get.parameters['country'] ?? "Choose Country";
   String selectedStatus = gett.Get.parameters['status'] ?? propertyStatus[0];
   String selectedType = gett.Get.parameters['type'] ?? propertyTypes[0];
+  String selectedCity = gett.Get.parameters['city'] ?? "choose city";
+
+
   final Map<String, dynamic> filters = {};
   late Future<List<Property>> _futureProperties;
-
   List<String> countries = [];
+
+  //controllers
   var advanceController=gett.Get.put(AdvanceFilter());
-
-
-
-  Timer? _debounce;
-
-
+  var countryController=gett.Get.put(CountryController());
 
   Future<void> _requestPermission() async {
     var status = await Permission.location.request();
@@ -69,51 +70,56 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
     }
   }
 
+  //functions
+  void _initializeFilters() {
+    final params = gett.Get.parameters;
+
+    // Parse and set price value
+    double priceValue = double.parse(params['price']  ?? '10000');
+    priceValue = (priceValue == 0.0) ? 10000.0 : priceValue;
+    _priceValues = SfRangeValues(0.0, priceValue);
+    filters['price[lte]'] = priceValue.toInt().toString();
+
+    // Parse and set bedrooms
+    if (params['bedrooms'] != null && params['bedrooms'] != 'Bedrooms') {
+      bedroom = int.tryParse(params['bedrooms']!) ?? 0;
+      if (bedroom > 0) {
+        selectedBedroom=params['bedrooms'].toString();
+        filters['bedrooms'] = bedroom.toString();
+      }
+    }
+
+    // Add filters conditionally
+    _addFilterIfValid('status', selectedStatus, propertyStatus);
+    _addFilterIfValid('type', selectedType, propertyTypes);
+    selectedCountry !="Country"? filters["country"] =selectedCountry:null;
+    selectedCity !="City"? filters["city"] =selectedCity:null;
+
+  }
+
+  void _addFilterIfValid(String key, String value, List<String>? validList) {
+    if (value != validList![0]) {
+      filters[key] = value;
+    }
+  }
+  Future<void> getIntialProperties() async{
+    await advanceController.searchProperties(filters);
+    setState(() {
+
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    double priceValue = double.tryParse(gett.Get.parameters['price'] != null &&
-                gett.Get.parameters['price'] != '0'
-            ? gett.Get.parameters['price']!
-            : '10000') ??
-        10000.0;
+    Future.microtask(() async{
+       _initializeFilters();
+      _requestPermission();
+     await countryController.getCountries();
+     getIntialProperties();
+    });
 
-    if (selectedBedroom != "Bedrooms") {
-      bedroom = int.tryParse(selectedBedroom) ?? 0; // Parse bedroom string to int
-      if (bedroom > 0) {
-        filters['bedrooms'] = bedroom.toString(); // Add to filters
-      }
-    }
-    // selectedBedroom = gett.Get.parameters['bedrooms'] ?? '0' ?? 0;
-    _priceValues = SfRangeValues(0.0, priceValue);
-    filters['price[lte]'] = priceValue.toInt().toString();
-    // Initialize the values from the passed parameters
-    selectedLabel = gett.Get.parameters['label'] ?? label[0];
-    selectedStatus = gett.Get.parameters['status'] ?? propertyStatus[0];
-    selectedType = gett.Get.parameters['type'] ?? propertyTypes[0];
-    selectedCountry = gett.Get.parameters['country'] ?? countriesList[0];
-
-    if (selectedStatus != propertyStatus[0]) {
-      filters['status'] = selectedStatus;
-    }
-    if (selectedType != propertyTypes[0]) {
-      filters['type'] = selectedType;
-    }
-    if(selectedCountry!=countriesList[0]){
-      filters['country']= selectedCountry;
-    }
-
-    // Log the parameters to the console for debugging
-    // Request location permission and get current location
-    _requestPermission();
-    advanceController.getCurrentLocation();
-
-    // Fetch properties based on the filters
-    _futureProperties = advanceController.searchProperties(filters);
   }
-
-
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
@@ -132,9 +138,8 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
             margin: EdgeInsets.all(8),
             child: Row(
               children: [
-                  Expanded(
+                Expanded(
                     flex: 1,
-
                     child: Container(
                       height: screenHeight,
                       child: gett.GetBuilder<AdvanceFilter>(
@@ -159,7 +164,6 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
                       ),
                     ),
                   ),
-
                 SizedBox(width: 20),
                 Expanded(
                   flex: 1,
@@ -170,18 +174,6 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
                     child: ListView(
                       shrinkWrap: true,
                       children: [
-                        buildDropdown(
-                      screenWidth,
-                      "Select an item",
-                      "asdsa",
-                      ["Option 1", "Option 2", "Option 3", "Option 4"],
-                          (String value) {
-                        setState(() {
-                          // selectedValue = value;
-                        });
-                      },
-                      context,
-                  ),
                         SizedBox(height: 20),
                         _buildFilterOptions(screenWidth),
                         SizedBox(height: 25),
@@ -201,7 +193,6 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
               ],
             ),
           ),
-
           Container(
             width: screenWidth,
             child: Fotter(),
@@ -211,21 +202,49 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
     );
   }
 
-
-  @override
-  void dispose() {
-    _debounce?.cancel();
-    super.dispose();
-  }
-
-  List<String> _filteredCountries = [];
   bool _showSuggestions = false;
+
 
   Widget _buildFilterOptions(double screenWidth) {
     return Column(
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            buildDropdown(screenWidth, "Country", selectedCountry, countryController.countries,
+                    (val) {
+                  setState(() {
+                    selectedCountry = val;
+                    countryController.getCities(val);
+                    val == "country"
+                        ? filters.remove("country")
+                        : filters['country'] = val;
+                  });
+                }, context),
+
+            buildDropdown(screenWidth, "City", selectedCountry=="Choose Country"?"Choose Country First":selectedCity, countryController.cities,
+                    (val) {
+                  setState(() {
+                    selectedCity = val;
+                    val == "Default City"
+                        ? filters.remove("city")
+                        : filters['city'] = val;
+                  });
+                }, context),
+            buildDropdown(screenWidth, "Status", selectedStatus, propertyStatus,
+                    (val) {
+                  setState(() {
+                    selectedStatus = val;
+                    val == "Default Status"
+                        ? filters.remove("status")
+                        : filters['status'] = val;
+                  });
+                }, context),
+          ],
+        ),
+        SizedBox(height: 25),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             buildDropdown(screenWidth, "Type", selectedType, propertyTypes,
                 (val) {
@@ -244,30 +263,22 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
                     : filters['label'] = val;
               });
             }, context),
-            buildDropdown(screenWidth, "Status", selectedStatus, propertyStatus,
-                (val) {
-              setState(() {
-                selectedStatus = val;
-                val == "Default Status"
-                    ? filters.remove("status")
-                    : filters['status'] = val;
-              });
-            }, context),
+            buildDropdown(
+                screenWidth, "Bedrooms", selectedBedroom, bedroomOptions,
+                    (val) {
+                  setState(() {
+                    selectedBedroom=val;
+                    selectedBedroom == "Bedrooms" ||selectedBedroom==0
+                        ? filters.remove("bedrooms")
+                        : filters["bedrooms"] = selectedBedroom;
+                  });
+                }, context),
           ],
         ),
         SizedBox(height: 25),
         Row(
           children: [
-            buildDropdown(
-                screenWidth, "Bedrooms", selectedBedroom, bedroomOptions,
-                (val) {
-              setState(() {
-                selectedBedroom=val;
-                selectedBedroom == "Bedrooms" ||selectedBedroom==0
-                    ? filters.remove("bedrooms")
-                    : filters["bedrooms"] = selectedBedroom;
-              });
-            }, context),
+
             SizedBox(width: 10),
             buildDropdown(
                 screenWidth, "Bathrooms", selectedBathroom, bathroomOptions,
@@ -355,9 +366,6 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
       ],
     );
   }
-
-  // Search button
-
   // Widget _buildSearchButton(double screenWidth) {
   //   return Container(
   //     width: screenWidth,
@@ -365,10 +373,7 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
   //     child: ElevatedButton(
   //       onPressed: () async {
   //     setState(() {
-  //       if (advanceController.country.value != countriesList[0]) {
-  //         filters['country'] = advanceController.country.value;
-  //       }
-  //       _futureProperties = searchProperties(filters);
+  //       _futureProperties = advanceController.searchProperties(filters);
   //     });
   //       },
   //       child: Text(
@@ -401,6 +406,7 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
                     filters["sort"] = sortMapping[val];
                     _futureProperties = advanceController.searchProperties(filters);
                   });
+
                 },
                 context,
               ),
@@ -409,8 +415,10 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
               style: ElevatedButton.styleFrom(
                   padding:EdgeInsets.symmetric(horizontal: 14,vertical: 12)
               ),
-              onPressed: () {
-                print(advanceController.searchProperties(filters));
+              onPressed: () async{
+                print("Filters $filters");
+
+               await advanceController.searchProperties(filters);
               },
               child: Text("Search",style: textmediam!.copyWith(color: Colors.white),),
             ),

@@ -1,12 +1,11 @@
 import 'dart:convert';
-import 'dart:js_interop';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart' as gett;
 import 'package:hive/hive.dart';
 import 'package:homedeals/models/favorite_property.dart';
+import 'package:homedeals/utils/constanats.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'package:homedeals/models/userModel.dart';
 
 import '../models/property_model.dart';
 import 'package:dio/dio.dart';
@@ -15,12 +14,15 @@ class HomeController extends gett.GetxController{
   final FirebaseAuth _auth = FirebaseAuth.instance;
   var box = Hive.box("user");
 
-
+   var selectedStatus=propertyStatus[1].obs;
    var active=0.obs;
-   filterButton(int index){
+  void filterButton(int index,status) {
     active.value = index;
+    selectedStatus.value = status;// Update status
     update();
   }
+
+
 
 
  bool isTokenExpired(String token){
@@ -64,6 +66,7 @@ class HomeController extends gett.GetxController{
     update();
   }
 
+  //Search Properties
   Future<List<Property>> searchProperties(Map<String,dynamic> filter) async {
     var _jwt=box.get("jwt");
 
@@ -100,6 +103,7 @@ class HomeController extends gett.GetxController{
   }
   List<Property> favoriteProperties=[];
 
+  //Adding to Favorite
   Future<void> addFavorite(Favorite data) async {
     Dio dio = Dio();
     var requestData = data.toJson();
@@ -130,6 +134,8 @@ class HomeController extends gett.GetxController{
       print('Unexpected exception: $e');
     }
   }
+
+  //Removing form Favorite
   Future<void> removeFavorite(Favorite data) async {
     Dio dio = Dio();
     var options = await _getOptionsWithAuth();
@@ -162,6 +168,7 @@ class HomeController extends gett.GetxController{
     }
   }
 
+  //Getting Favorite
   Future<dynamic> getFavProperties(String userId,) async {
     var _jwt=box.get("jwt");
     Dio dio = Dio();

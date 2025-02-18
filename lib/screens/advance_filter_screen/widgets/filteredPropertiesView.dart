@@ -10,7 +10,7 @@ class Filters extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<AdvanceFilter>(
       builder: (controller) {
-        if(controller.isloading==true){
+        if(controller.isLoading==true){
           return Container(height:50,width: 50,child: CircularProgressIndicator());
         }
         else if (controller.properties.isEmpty) {

@@ -22,7 +22,8 @@ TextStyle buttontext = GoogleFonts.roboto(
 TextStyle mediamheading = GoogleFonts.roboto(
   fontSize: 28,
   fontWeight: FontWeight.w400,
-);TextStyle textfieldtext = GoogleFonts.roboto(
+);
+TextStyle textfieldtext = GoogleFonts.roboto(
   fontSize: 14,
   fontWeight: FontWeight.w400,
 );

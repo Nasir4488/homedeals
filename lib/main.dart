@@ -11,6 +11,7 @@ import 'package:homedeals/utils/elevated_button_style.dart';
 import 'package:homedeals/utils/routes.dart';
 import 'package:homedeals/utils/textTheams.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'cores/homeController.dart';
 import 'firebase_options.dart';
 import 'models/property_model.dart';
 
@@ -29,6 +30,7 @@ void main() async {
   var storedUserName = userBox.get('userName');
 
   Widget intialScreen=storedUserName!=null?HomeScreen():SignUpScreen();
+  Get.put(HomeController());
   runApp(MyApp(initialScreen: intialScreen));
 
 }

@@ -27,6 +27,6 @@ List<GetPage> allPages = [
   GetPage(name: AllRoutes.loginPage, page: () => const LoginScreen()),
   GetPage(name: AllRoutes.signupScreen, page: () => const SignUpScreen()),
   GetPage(name: AllRoutes.advancefilter, page: ()=>const AdvanceFilter(),parameters: {}),
-  GetPage(name: AllRoutes.singlePropertyScreen, page: () => SinglePropertyScreen(),),
+  GetPage(name: AllRoutes.singlePropertyScreen, page: () => SinglePropertyScreen()),
   GetPage(name: AllRoutes.shortFilterScreen, page: () => Shortfiltersscreen()),
 ];

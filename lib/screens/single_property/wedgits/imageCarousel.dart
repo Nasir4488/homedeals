@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:homedeals/models/property_model.dart';
 
@@ -26,12 +25,10 @@ class _ImageCarouselState extends State<ImageCarousel> {
           items: widget.property.photos!.map((photoUrl) {
             return Builder(
               builder: (BuildContext context) {
-                return CachedNetworkImage(
-                  imageUrl: photoUrl,
+                return Image.network(
+                  photoUrl,
                   fit: BoxFit.cover,
                   width: screenWidth * 0.7,
-                  placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                  errorWidget: (context, url, error) => const Center(child: Text('Error loading image')),
                 );
               },
             );
@@ -80,14 +77,23 @@ class _ImageCarouselState extends State<ImageCarousel> {
                   width: 2,
                 ),
               ),
-              child: CachedNetworkImage(
-                imageUrl: widget.property.photos![index],
+              child: Image.network(
+                widget.property.photos![index],
                 fit: BoxFit.cover,
                 width: 100,
                 height: 100,
-                placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                errorWidget: (context, url, error) => const Center(child: Text('Error loading image')),
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) {
+                    return child;
+                  } else {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return const Center(child: Text('Error loading image'));
+                },
               ),
+
             ),
           );
         },

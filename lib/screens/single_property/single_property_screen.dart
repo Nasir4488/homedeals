@@ -2,7 +2,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:get/get.dart' as gett;
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:hive/hive.dart';
 import 'package:homedeals/cores/crudPropertiesController.dart';
 import 'package:homedeals/models/property_model.dart';
 import 'package:homedeals/screens/single_property/wedgits/carasoulOverViewCalenderSection.dart';
@@ -18,7 +17,7 @@ import 'package:homedeals/wedgits/appbar.dart';
 import 'package:homedeals/wedgits/fotterSection.dart';
 
 class SinglePropertyScreen extends StatefulWidget {
-  const SinglePropertyScreen({
+  SinglePropertyScreen({
     Key? key,
   }) : super(key: key);
 
@@ -27,7 +26,6 @@ class SinglePropertyScreen extends StatefulWidget {
 }
 
 class _SinglePropertyScreenState extends State<SinglePropertyScreen> {
-  late Property property;
   int currentSlide = 0;
   int results = 0;
   List<Property> properties = [];
@@ -35,25 +33,13 @@ class _SinglePropertyScreenState extends State<SinglePropertyScreen> {
   var crudProperties = Get.put(Crudpropertiescontroller());
   DateTime selectedDate = DateTime.now();
   DateTime lastDate = DateTime.now().add(Duration(days: 15));
+  final Property property = Get.arguments as Property;
+
 
   @override
   void initState() {
-    var box = Hive.box('propertyBox');
-    property = box.get('selectedProperty');
-    if (property == null) {
-      // Handle the case where the property is not retrieved
-      print('No property found in Hive.');
-    } else {
-    }
     getRelatedProperties();
   }
-@override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-    var box = Hive.box('propertyBox');
-    box.delete('selectedProperty');
-}
 
   @override
   Widget build(BuildContext context) {
@@ -110,9 +96,6 @@ class _SinglePropertyScreenState extends State<SinglePropertyScreen> {
 
 
                     if (property.photos != null && property.photos!.isNotEmpty)
-
-                      //In this there is Carsole Overview Left calnder Sections
-
                       Carasoulplusoverviewsection(property: property,)
                     else
                       Center(child: Text('No images available')),

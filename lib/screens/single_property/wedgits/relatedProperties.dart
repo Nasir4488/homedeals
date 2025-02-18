@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -104,8 +103,8 @@ class _RelatedpropertiesState extends State<Relatedproperties> {
                             topRight: Radius.circular(8),
                             topLeft: Radius.circular(8),
                           ),
-                          child: CachedNetworkImage(
-                              imageUrl: widget.property.photos![0],
+                          child: Image.network(
+                               widget.property.photos![0],
                               fit: BoxFit.fill),
                         ),
                       ),
@@ -228,11 +227,9 @@ class _RelatedpropertiesState extends State<Relatedproperties> {
                     ),
                   ],
                 ),
-                SizedBox(
-                  height: 10,
-                ),
+
                 Container(
-                  margin: EdgeInsets.all(8),
+                  margin: EdgeInsets.symmetric(horizontal: 8,vertical: 4),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
