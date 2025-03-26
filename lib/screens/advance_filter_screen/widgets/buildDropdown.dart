@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../utils/textTheams.dart';
+
 Widget buildDropdown(
     double screenWidth,
     String hint,
@@ -38,10 +40,7 @@ Widget buildDropdown(
             child: Text(
               currentValue.isEmpty ? hint : currentValue,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall!
-                  .copyWith(color: Colors.black),
+              style: subheading,
             ),
           ),
           Icon(Icons.arrow_drop_down, size: 20),

@@ -1,7 +1,11 @@
+import 'dart:math';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:get/get.dart' as gett;
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:hive/hive.dart';
+import 'package:homedeals/cores/advanceFilterController.dart';
 import 'package:homedeals/cores/crudPropertiesController.dart';
 import 'package:homedeals/models/property_model.dart';
 import 'package:homedeals/screens/single_property/wedgits/carasoulOverViewCalenderSection.dart';
@@ -16,6 +20,8 @@ import 'package:homedeals/utils/textTheams.dart';
 import 'package:homedeals/wedgits/appbar.dart';
 import 'package:homedeals/wedgits/fotterSection.dart';
 
+import '../../cores/singlePropertyController.dart';
+
 class SinglePropertyScreen extends StatefulWidget {
   SinglePropertyScreen({
     Key? key,
@@ -24,7 +30,6 @@ class SinglePropertyScreen extends StatefulWidget {
   @override
   State<SinglePropertyScreen> createState() => _SinglePropertyScreenState();
 }
-
 class _SinglePropertyScreenState extends State<SinglePropertyScreen> {
   int currentSlide = 0;
   int results = 0;
@@ -33,18 +38,44 @@ class _SinglePropertyScreenState extends State<SinglePropertyScreen> {
   var crudProperties = Get.put(Crudpropertiescontroller());
   DateTime selectedDate = DateTime.now();
   DateTime lastDate = DateTime.now().add(Duration(days: 15));
-  final Property property = Get.arguments as Property;
+  Property? property;
+  var singlePropertyController = Get.put(SinglePropertyController());
 
-
+  Future<void> loadProperty() async {
+    var box = await Hive.openBox('propertyBox');
+    var id = box.get('propertyId');
+    if (id != null) {
+         property = await singlePropertyController.searchProperty({"_id":id});
+      setState(() {
+        print(property!.toJson());
+      });
+    } else {
+      // Handle the case when there's no property in Hive
+      print('No property found in Hive');
+    }
+  }
+  getRelatedProperties() async {
+    properties = [];
+    Map<String, dynamic> filter = {"type": property!.type};
+    properties = await crudProperties.searchProperties(filter, property!.id);
+    setState(() {});
+  }
   @override
   void initState() {
-    getRelatedProperties();
+    Future.microtask(()async{
+      await loadProperty();
+      await getRelatedProperties();
+    });
+
   }
 
   @override
   Widget build(BuildContext context) {
     var screenwidth = MediaQuery.of(context).size.width;
     var screenheight = MediaQuery.of(context).size.height;
+    if(property == null){
+      return Center(child: Container(height:30,width:30,child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       body: Column(
@@ -61,14 +92,14 @@ class _SinglePropertyScreenState extends State<SinglePropertyScreen> {
                       vertical: screenwidth * 0.025),
                   children: [
                     // share print and favorit icons
-                    Homeicons(property: property,),
+                    Homeicons(property: property!,),
                     SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(property.title ?? 'No Title',
+                        Text(property!.title ?? 'No Title',
                             style: mediamheading),
-                        Text("\$${property.price?.toString() ?? 'N/A'}",
+                        Text("\$${property!.price?.toString() ?? 'N/A'}",
                             style: Theme.of(context).textTheme.bodyLarge),
                       ],
                     ),
@@ -76,10 +107,10 @@ class _SinglePropertyScreenState extends State<SinglePropertyScreen> {
                     Row(
                       children: [
                         button_property(
-                            color: greenColor, title: property.type ?? 'N/A'),
+                            color: greenColor, title: property!.type ?? 'N/A'),
                         SizedBox(width: 5),
                         button_property(
-                            color: Colors.grey, title: property.label ?? 'N/A'),
+                            color: Colors.grey, title: property!.label ?? 'N/A'),
                       ],
                     ),
                     SizedBox(height: 8),
@@ -88,15 +119,15 @@ class _SinglePropertyScreenState extends State<SinglePropertyScreen> {
                         Icon(Icons.pin_drop_outlined,
                             color: Colors.grey, size: 14),
                         SizedBox(width: 8),
-                        Text(property.address ?? 'No Address',
+                        Text(property!.address ?? 'No Address',
                             style: profileText),
                       ],
                     ),
                     SizedBox(height: 30),
 
 
-                    if (property.photos != null && property.photos!.isNotEmpty)
-                      Carasoulplusoverviewsection(property: property,)
+                    if (property!.photos != null && property!.photos!.isNotEmpty)
+                      Carasoulplusoverviewsection(property: property!,)
                     else
                       Center(child: Text('No images available')),
                     SizedBox(
@@ -106,15 +137,13 @@ class _SinglePropertyScreenState extends State<SinglePropertyScreen> {
                     //Description Section
 
                     PropertyDescription(
-                      description: property.description.toString(),
+                      description: property!.description.toString(),
                     ),
                     SizedBox(
                       height: 10,
                     ),
-
                     //Address Section
-
-                    PropertyAddress(property: property),
+                    PropertyAddress(property: property!),
                     SizedBox(
                       height: 10,
                     ),
@@ -122,7 +151,7 @@ class _SinglePropertyScreenState extends State<SinglePropertyScreen> {
                     //Features Section
 
                     PropertyFeatures(
-                      features: property.features!.toList(),
+                      features: property!.features!.toList(),
                     ),
                     SizedBox(
                       height: 30,
@@ -186,14 +215,6 @@ class _SinglePropertyScreenState extends State<SinglePropertyScreen> {
         ],
       ),
     );
-  }
-
-  getRelatedProperties() async {
-    properties = [];
-    Map<String, dynamic> filter = {"type": property.type};
-    properties = await crudProperties.searchProperties(filter, property.id);
-      setState(() {});
-
   }
 }
 

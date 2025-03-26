@@ -32,8 +32,8 @@ final List<String> socialMediaUrls = [
 
 List<String> propertyTypes = [
   "Default Type",
-  'Commercial',
   'Residential',
+  'Commercial',
   'Industrial',
   'Land',
   "Developers projects"
@@ -66,10 +66,7 @@ List<String> propertyStatus = [
   "For Sale",
   "For Rent",
   'Auction',
-  "Developer Option",
-  "Under Construction",
-  "Vacant",
-  "Pending",
+  "Projects",
 
 ];
 // label
@@ -81,6 +78,7 @@ List<String> label = [
 ];
 
 List<String> allLabels=[
+  "Default Label",
   "Office",
   "Building",
   "Hotel",
@@ -131,9 +129,9 @@ List<String> comercial=[
   "Commercial other",
 ];
 List<String> residenctial=[
-  "Apartment",
-  "House",
   "Building",
+  "House",
+  "Apartment",
 ];
 List<String> industrial=[
   "Warehouse",
@@ -158,6 +156,68 @@ List<String> developersProjects=[
   "House",
   "Comerical",
   "Land",
+];
+
+List<Map<String,dynamic>> menu=[
+  {
+    "title": "Residential",
+    "submenu": [
+      "Apartment",
+      "House",
+      "Building",
+    ]
+  },
+
+  {
+    "title": "Commercial",
+    "submenu": [
+      "Office",
+      "Building",
+      "Hotel",
+      "Hostel",
+      "Coffee Shop",
+      "Restaurant",
+      "Shop",
+      "Parking",
+      "Educational Facility",
+      "Health Facilty",
+      "Data Center",
+      "Commercial other",
+    ]
+  },
+  {
+    "title": "Industrial",
+    "submenu": [
+      "Warehouse",
+      "Factory",
+      "Form",
+      "WorkShop",
+      "Loading Bay",
+      "Storage facility",
+      "Industrial other",
+    ]
+  }, // Nested menu
+  {
+    "title": "Land",
+    "submenu": [
+      "Residential",
+      "Commercial",
+      "Industrial estate",
+      "Agricultural",
+      "Forest",
+      "Garden",
+      "Land other",
+    ]
+  },
+  {
+    "title": "Projects",
+    "submenu": [
+      "Apartment",
+      "House",
+      "Comerical",
+      "Land",
+    ]
+  },
 ];
 
 List<int> bedrooms = [ 1, 2, 3, 4, 5, 6, 7, 8, 9];

@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 TextStyle textmediam = GoogleFonts.roboto(
-  fontSize: 17,
+  fontSize: 20,
   fontWeight: FontWeight.w400,
 );
 
 TextStyle textlarge = GoogleFonts.roboto(
-  fontSize: 40,
-  fontWeight: FontWeight.w300,
+  fontSize: 50,
+  fontWeight: FontWeight.w500,
 );
-
 
 TextStyle textsmall = GoogleFonts.roboto(
   fontSize: 12,
   fontWeight: FontWeight.w300,
 );
 TextStyle buttontext = GoogleFonts.roboto(
-  fontSize: 14,
-  fontWeight: FontWeight.w400,
+  fontSize: 17,
+  color: Colors.white,
+  fontWeight: FontWeight.w500,
 );
 TextStyle mediamheading = GoogleFonts.roboto(
   fontSize: 28,
@@ -27,14 +27,17 @@ TextStyle textfieldtext = GoogleFonts.roboto(
   fontSize: 14,
   fontWeight: FontWeight.w400,
 );
+
 TextStyle navtext = GoogleFonts.roboto(
-  fontSize: 17,
-  fontWeight: FontWeight.w400,
+    fontWeight: FontWeight.w500,
+    fontSize: 18,
+    color: Colors.black
 );
 TextStyle subheading = GoogleFonts.roboto(
-  fontSize: 14,
-  fontWeight: FontWeight.w400,
-);TextStyle profileText = GoogleFonts.roboto(
+  fontSize: 16,
+  fontWeight: FontWeight.w500,
+);
+TextStyle profileText = GoogleFonts.roboto(
   fontSize: 15,
   fontWeight: FontWeight.w200,
 );

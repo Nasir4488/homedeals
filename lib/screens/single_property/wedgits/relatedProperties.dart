@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:homedeals/cores/homeController.dart';
 import 'package:homedeals/models/property_model.dart';
 import 'package:homedeals/utils/routes.dart';
+import 'package:homedeals/utils/textTheams.dart';
 
 import '../../../models/favorite_property.dart';
 import '../../../utils/colors.dart';
@@ -60,9 +61,9 @@ class _RelatedpropertiesState extends State<Relatedproperties> {
       child: InkWell(
         onTap: (){
           var box = Hive.box('propertyBox');
-          box.put('selectedProperty', null);
-             box.put('selectedProperty', widget.property);
-            print(widget.property.title);
+          box.put('propertyId', widget.property.id);
+             // box.put('selectedProperty', widget.property);
+            // print(widget.property.title);
             setState(() {
             });
           Navigator.pushAndRemoveUntil(
@@ -160,11 +161,7 @@ class _RelatedpropertiesState extends State<Relatedproperties> {
                           children: [
                             Text(
                               '\$${widget.property.price}',
-                              style: GoogleFonts.poppins(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.normal,
-                              ),
+                              style: textmediam.copyWith(color: Colors.white),
                             ),
                             Row(
                               mainAxisAlignment:
@@ -235,26 +232,26 @@ class _RelatedpropertiesState extends State<Relatedproperties> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        height: 8,
+                        height: 6,
                       ),
                       Text(
                         widget.property.title,
-                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(overflow: TextOverflow.ellipsis),
+                        style: textmediam.copyWith(overflow: TextOverflow.ellipsis),
                       ),
                       SizedBox(
                         height: 6,
                       ),
                       Text(
                         widget.property.address,
-                        style: Theme.of(context).textTheme.bodySmall!.copyWith(overflow: TextOverflow.ellipsis),
+                        style: textsmall!.copyWith(overflow: TextOverflow.ellipsis),
                       ),
                       SizedBox(
-                        height: 10,
+                        height: 6,
                       ),
                       Row(
                         children: [
                           Text(widget.property.bedrooms.toString(),
-                              style: Theme.of(context).textTheme.bodySmall),
+                              style: textsmall),
                           SizedBox(
                             width: 1,
                           ),
@@ -267,7 +264,7 @@ class _RelatedpropertiesState extends State<Relatedproperties> {
                           ),
                           Text(
                             widget.property.bathrooms.toString(),
-                            style: Theme.of(context).textTheme.bodySmall,
+                            style: textsmall,
                           ),
                           SizedBox(
                             width: 1,
@@ -279,9 +276,7 @@ class _RelatedpropertiesState extends State<Relatedproperties> {
                           SizedBox(
                             width: 5,
                           ),
-                          SizedBox(
-                            width: 2,
-                          ),
+
                         ],
                       ),
                       SizedBox(
@@ -289,7 +284,7 @@ class _RelatedpropertiesState extends State<Relatedproperties> {
                       ),
                       Text(
                         widget.property.type,
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: textmediam,
                       ),
                       Container(
                         color: greyColor,
@@ -307,8 +302,7 @@ class _RelatedpropertiesState extends State<Relatedproperties> {
                             style: Theme.of(context).textTheme.bodySmall,
                           ),Text(
                             getPropertyAge(widget.property.yearBuilt),
-
-                            style: Theme.of(context).textTheme.bodySmall,
+                            style:textsmall,
                           ),
                         ],
                       )

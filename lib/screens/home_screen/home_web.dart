@@ -26,13 +26,10 @@ class _HomeWebState extends State<HomeWeb> {
           children: [
             HomeHeader(),
             DiscoverProperty(),
-            SizedBox(height: 30,),
-            ComercialProperties(),
             ResdensialProperties(),
+            ComercialProperties(),
             FinestProperties(),
             Fotter(),
-
-
           ],
         )
       ),

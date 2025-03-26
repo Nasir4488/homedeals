@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/src/foundation/print.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -22,6 +24,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await Hive.initFlutter();
+
   // Registering the adapters
   Hive.registerAdapter(PropertyAdapter());
   Hive.registerAdapter(ListingAgentAdapter());
@@ -31,6 +34,8 @@ void main() async {
 
   Widget intialScreen=storedUserName!=null?HomeScreen():SignUpScreen();
   Get.put(HomeController());
+  setUrlStrategy(PathUrlStrategy());
+
   runApp(MyApp(initialScreen: intialScreen));
 
 }

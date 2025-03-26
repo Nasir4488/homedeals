@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive/hive.dart';
 import 'package:homedeals/wedgits/appbar.dart';
 
 import '../../cores/shortFilterController.dart';
@@ -16,16 +17,43 @@ class Shortfiltersscreen extends StatefulWidget {
 }
 
 class _ShortfiltersscreenState extends State<Shortfiltersscreen> {
+  // var filterType = Get.arguments("filterType") as Map<String, String>?;
   var shortFilters = Get.put(ShortFilterController());
   Map<String, dynamic> filters = {};
-  String filter=Get.arguments['filter']??'';
+  bool filtersLoaded = false;
+
+  Future<void> loadProperty() async {
+    String arguments=Get.arguments?["filterType"]?? "";
+    var box = await Hive.openBox('propertyBox');
+    String label = await box.get('propertyLabel', defaultValue: "");
+    String type = await box.get('propertyType', defaultValue: "");
+
+    if (arguments == "type") {
+      filters = {"type": type.isNotEmpty ? type : "defaultType"}; // Ensure non-null value
+    } else {
+      filters = {"label": label.isNotEmpty ? label : "defaultLabel"}; // Ensure non-null value
+    }
+    setState(() {
+    });
+    filtersLoaded = true;
+  }
+@override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+
+  }
 @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    Future.microtask(()async{
+      await loadProperty();
+    });
   }
   @override
   Widget build(BuildContext context) {
+    print(filters);
     var screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       body: ListView(
@@ -40,30 +68,47 @@ class _ShortfiltersscreenState extends State<Shortfiltersscreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(height: 60),
+                filtersLoaded?
                 FutureBuilder(
-                    future: shortFilters.searchProperties({"label": "${filter}"}),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return CircularProgressIndicator();
-                      } else if (snapshot.hasError) {
-                        return Center(
-                          child: Text("Error"),
-                        );
-                      } else {
-                        return Wrap(
-                          spacing: 30.0, // Horizontal space between items
-                          runSpacing: 30.0, // Vertical space between lines
-                          children: [
-                            for (var property in snapshot.data!)
-                              Container(
-                                  width: screenWidth / 4,
-                                  child: CustomProperty(
-                                    property: property,
-                                  )),
-                          ],
-                        );
+                  future: shortFilters.searchProperties(filters),
+                  builder: (context, snapshot) {
+                    print("Snapshot Data: ${snapshot.data}"); // Debugging statement
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    }
+                    else if (snapshot.hasError) {
+                      print("Error: ${snapshot.error}"); // Debugging error
+                      return Center(child: Text("Error"));
+                    }
+                    else if (snapshot.hasData) {
+                      if (snapshot.data == null || snapshot.data!.isEmpty) {
+                        print("No Data Found - Empty List"); // Debugging empty case
+                        return Center(child: Text("No Data Found"));
                       }
-                    }),
+                      print("Data Found: ${snapshot.data!.length} items"); // Debugging statement
+
+                      return Wrap(
+                        spacing: 30.0, // Horizontal space between items
+                        runSpacing: 30.0, // Vertical space between lines
+                        children: [
+                          for (var property in snapshot.data!)
+                            Container(
+                              width: screenWidth / 4,
+                              child: CustomProperty(
+                                property: property,
+                              ),
+                            ),
+                        ],
+                      );
+                    }
+                    else {
+                      print("Snapshot has neither data nor error");
+                      return Center(child: Text("No Data Found"));
+                    }
+                  },
+                ):
+                CircularProgressIndicator(),
+
                 SizedBox(height: 100),
               ],
             ),
@@ -149,21 +194,6 @@ class _CustomPropertyState extends State<CustomProperty> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 20),
-// Container(
-//   height: 20,
-//   width: 70,
-//   decoration: BoxDecoration(
-//     color: Colors.lightGreen.withOpacity(1),
-//     borderRadius: BorderRadius.circular(6),
-//   ),
-//   child: Center(
-//     child: Text(
-//       '',
-//       style: Theme.of(context).textTheme.bodySmall,
-//     ),
-//   ),
-// ),
                     SizedBox(height: 10),
                     // Added spacing between 'Featured' and other content
                     Row(

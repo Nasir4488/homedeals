@@ -18,13 +18,14 @@ import '../../utils/textTheams.dart';
 class AdvanceFilterWeb extends StatefulWidget {
   final String? status;
   final String? type;
+  final String? label;
   final int? price;
   final String? country;
   final int? bedrooms;
   final String? city;
 
   const AdvanceFilterWeb(
-      {Key? key, this.status, this.type, this.price, this.country,this.bedrooms,this.city})
+      {Key? key, this.status, this.type, this.price, this.country,this.bedrooms,this.city,this.label})
       : super(key: key);
 
   @override
@@ -35,8 +36,7 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
 
   var locationController = TextEditingController();
   // SfRangeValues? _priceValues;
-  SfRangeValues _priceValues = SfRangeValues(0.0, 10000.0);
-  SfRangeValues _areaValues = SfRangeValues(0.0, 10000.0);
+  SfRangeValues _priceValues = SfRangeValues(0.0, 1000000.0);
 
   String selectedBedroom = "Bedrooms";
   String selectedBathroom = "Bathrooms";
@@ -47,12 +47,11 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
 
   List<String> bedroomOptions = ["Bedrooms"] + bedrooms.map((b) => b.toString()).toList();
   List<String> bathroomOptions = ["Bathrooms"] + bathrooms.map((b) => b.toString()).toList();
-
-  String selectedLabel = label[0];
-  String selectedCountry = gett.Get.parameters['country'] ?? "Choose Country";
+  String selectedLabel = gett.Get.parameters['label'] ?? label[0];
+  String selectedCountry = gett.Get.parameters['country'] ?? "Country";
+  String selectedCity = gett.Get.parameters['city'] ?? "City";
   String selectedStatus = gett.Get.parameters['status'] ?? propertyStatus[0];
   String selectedType = gett.Get.parameters['type'] ?? propertyTypes[0];
-  String selectedCity = gett.Get.parameters['city'] ?? "choose city";
 
 
   final Map<String, dynamic> filters = {};
@@ -73,12 +72,14 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
   //functions
   void _initializeFilters() {
     final params = gett.Get.parameters;
-
     // Parse and set price value
-    double priceValue = double.parse(params['price']  ?? '10000');
-    priceValue = (priceValue == 0.0) ? 10000.0 : priceValue;
-    _priceValues = SfRangeValues(0.0, priceValue);
-    filters['price[lte]'] = priceValue.toInt().toString();
+    double intialPrice = double.parse(params['intialPrice']  ?? '0');
+    intialPrice = (intialPrice == 0.0) ? 0.0 : intialPrice;
+    double finalPrice = double.parse(params['finalPrice']  ?? '10000000');
+    finalPrice = (finalPrice == 0.0) ? 10000000.0 : finalPrice;
+    _priceValues = SfRangeValues(intialPrice, finalPrice);
+    filters['price[lte]'] = finalPrice.toInt().toString();
+    filters['price[gte]'] = intialPrice.toInt().toString();
 
     // Parse and set bedrooms
     if (params['bedrooms'] != null && params['bedrooms'] != 'Bedrooms') {
@@ -92,20 +93,34 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
     // Add filters conditionally
     _addFilterIfValid('status', selectedStatus, propertyStatus);
     _addFilterIfValid('type', selectedType, propertyTypes);
-    selectedCountry !="Country"? filters["country"] =selectedCountry:null;
-    selectedCity !="City"? filters["city"] =selectedCity:null;
+    _addFilterIfValid('label', selectedLabel, allLabels);
+    if (selectedCountry == "Country") {
+      filters.remove('country');
+    } else {
+      filters['country'] = selectedCountry;
+    }
+
+    if (selectedCity != "City") {
+      filters['city'] = selectedCity;
+    } else {
+      filters.remove('city');
+    }
 
   }
 
   void _addFilterIfValid(String key, String value, List<String>? validList) {
-    if (value != validList![0]) {
+    if (value == validList![0] || value.isEmpty ||value == null) {
+      filters.remove('key');
+    }
+    else{
       filters[key] = value;
+
     }
   }
   Future<void> getIntialProperties() async{
     await advanceController.searchProperties(filters);
+    print(filters);
     setState(() {
-
     });
   }
 
@@ -178,8 +193,6 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
                         _buildFilterOptions(screenWidth),
                         SizedBox(height: 25),
                         _buildPriceRangeFilter(),
-                        SizedBox(height: 20),
-                        _buildAreaRange(),
                         SizedBox(height: 20),
                         // _buildSearchButton(screenWidth),
                         _buildSortOptions(screenWidth),
@@ -310,7 +323,7 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
         Container(
           child: SfRangeSlider(
             min: 0.0,
-            max: 10000.0,
+            max: 10000000.0,
             values: _priceValues,
             showLabels: true,
             enableTooltip: true,
@@ -333,39 +346,7 @@ class _AdvanceFilterWebState extends State<AdvanceFilterWeb> {
     );
   }
 
-  Widget _buildAreaRange() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          margin: EdgeInsets.only(left: 12),
-          child: AutoSizeText(
-            "Select Area Range",
-            style: buttontext,
-          ),
-        ),
-        Container(
-          child: SfRangeSlider(
-            min: 0.0,
-            max: 10000.0,
-            values: _areaValues,
-            showLabels: true,
-            enableTooltip: true,
-            showTicks: false,
-            activeColor: blueColor,
-            onChanged: (SfRangeValues values) {
-              setState(() {
-                _areaValues = values;
 
-                filters['area[gte]'] = values.start.toInt().toString();
-                filters['area[lte]'] = values.end.toInt().toString();
-              });
-            },
-          ),
-        ),
-      ],
-    );
-  }
   // Widget _buildSearchButton(double screenWidth) {
   //   return Container(
   //     width: screenWidth,

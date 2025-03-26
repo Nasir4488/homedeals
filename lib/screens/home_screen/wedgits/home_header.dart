@@ -1,12 +1,18 @@
+import 'dart:html';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:homedeals/cores/homeController.dart';
+import 'package:homedeals/screens/home_screen/wedgits/dropDownPriceBed.dart';
+import 'package:homedeals/screens/home_screen/wedgits/propertiesDropDown.dart';
+import 'package:homedeals/screens/home_screen/wedgits/statusButtons.dart';
+import 'package:homedeals/utils/textTheams.dart';
 import '../../../cores/countryController.dart';
 import '../../../utils/constants.dart';
 import '../../../utils/routes.dart';
 import '../../../wedgits/appbar.dart';
+import '../../../wedgits/dropDownWithSearch.dart';
 
 class HomeHeader extends StatefulWidget {
   const HomeHeader({Key? key}) : super(key: key);
@@ -24,27 +30,32 @@ class _HomeHeaderState extends State<HomeHeader> {
 
   String selectedStatus = propertyStatus[1];
   String selectedCountry = "Country";
-  String selectedType = propertyTypes[0];
-  int selectedPrice = 0;
+  String selectedLabel = "";
+  String selectedType = "";
+  int selectedIPrice = 0;
+  int selectedFPrice = 0;
   int selectedBedRooms = 0;
-  String selectedCity="City";
+  String selectedCity = "City";
   int val = 0;
   Map<String, dynamic>? countriesData;
   String catagory = "Property Type";
 
   List<String> countries = [];
   Map<String, dynamic> data = {};
-  List<String> priceStrings =
-      ["Any"] + prices.map((int price) => price.toString()).toList();
-  List<String> bedroomsString =
-      ["Any"] + bedrooms.map((int bedrooms) => bedrooms.toString()).toList();
+
 
   @override
   void initState() {
     countryController.getCountries();
-
     // TODO: implement initState
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    countryController.cities.clear();
   }
 
   @override
@@ -74,14 +85,8 @@ class _HomeHeaderState extends State<HomeHeader> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    "Search your dream property",
-                    style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                          color: whiteColor,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0,
-                        ),
-                  ),
+                  Text("Search Your Dream Property",
+                      style: textlarge!.copyWith(color: Colors.white)),
                   Column(
                     children: [
                       Row(
@@ -106,7 +111,6 @@ class _HomeHeaderState extends State<HomeHeader> {
                             width: 5,
                           ),
                           StatusButtons(propertyStatus[4], 4, context),
-
                           // All Status
                         ],
                       ),
@@ -129,7 +133,7 @@ class _HomeHeaderState extends State<HomeHeader> {
                           ],
                         ),
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SizedBox(
                               height: 20,
@@ -138,38 +142,8 @@ class _HomeHeaderState extends State<HomeHeader> {
                             //Titles For Filters
                             Container(
                               margin: EdgeInsets.symmetric(horizontal: 10),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  filterTitles(
-                                      context: context,
-                                      screenWidth: screenWidth,
-                                      title: "Countries"),
-                                  filterTitles(
-                                      context: context,
-                                      screenWidth: screenWidth,
-                                      title: "City"),
-                                  filterTitles(
-                                      context: context,
-                                      screenWidth: screenWidth,
-                                      title: "Property Type"),
-                                  filterTitles(
-                                      context: context,
-                                      screenWidth: screenWidth,
-                                      title: "Bedrooms"),
-                                  filterTitles(
-                                      context: context,
-                                      screenWidth: screenWidth,
-                                      title: "Price"),
-                                  filterTitles(
-                                      context: context,
-                                      screenWidth: screenWidth,
-                                      title: "           "),
-                                ],
-                              ),
-                            ),
 
+                            ),
                             //Input for Filters
                             Container(
                               margin: EdgeInsets.symmetric(horizontal: 10),
@@ -177,72 +151,156 @@ class _HomeHeaderState extends State<HomeHeader> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  buildDropdown(
-                                      screenWidth,
-                                      "Country",
-                                      selectedCountry,
-                                      countryController.countries, (val) {
-                                    setState(() {
-                                      selectedCountry = val;
-                                      countryController.getCities(val);
-                                    });
-                                  }, context),
-                                  buildDropdown(screenWidth, "Cities",
-                                      selectedCity, countryController.cities, (val) {
-                                    setState(() {
-                                      print(countryController.cities);
-                                      selectedCity = val;
-                                    });
-                                  }, context,isEnabled: selectedCountry!="Default"),
-                                  buildDropdown(screenWidth, "Type",
-                                      selectedType, propertyTypes, (val) {
-                                    setState(() {
-                                      selectedType = val;
-                                    });
-                                  }, context),
-                                  buildDropdown(
-                                      screenWidth,
-                                      "Bedrooms",
-                                      selectedBedRooms == 0
-                                          ? "Any"
-                                          : selectedBedRooms.toString(),
-                                      bedroomsString, (val) {
-                                    setState(() {
-                                      if (val == "Any") {
-                                        selectedBedRooms = 0;
-                                      } else {
-                                        selectedBedRooms = int.parse(
-                                            val); // Convert back to int after selection
-                                      }
-                                    });
-                                  }, context),
-                                  buildDropdown(
-                                    screenWidth,
-                                    "Select Price",
-                                    selectedPrice == 0
-                                        ? "Any"
-                                        : selectedPrice.toString(),
-                                    priceStrings,
-                                    (val) {
-                                      setState(() {
-                                        if (val == "Any") {
-                                          selectedPrice =
-                                              0; // Reset to 0 if "Any" is selected
-                                        } else {
-                                          selectedPrice = int.parse(
-                                              val); // Convert back to int after selection
-                                        }
-                                      });
-                                    },
-                                    context,
+                                  Container(
+                                      width: screenWidth * 0.12,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                            color: Colors.grey.shade500,
+                                            width: 1),
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: DropdownWithSearch(
+                                        title: "Country",
+                                        list: countryController.countries,
+                                        // Automatically updates UI
+                                        flags: countryController.flags,
+                                        onItemSelected: (selected) async {
+                                          selectedCountry = selected;
+                                          int index = countryController
+                                              .countries
+                                              .indexOf(selectedCountry);
+                                          if (index != -1) {
+                                            String isoCode =
+                                                countryController.countryCodes[
+                                                    index]; // Get the ISO code
+                                            setState(() {
+                                              print(isoCode);
+
+                                              countryController.getCities(
+                                                  isoCode); // Fetch cities using ISO code
+                                            });
+                                          }
+                                        },
+                                      )),
+                                  Container(
+                                      width: screenWidth * 0.12,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                            color: Colors.grey.shade500,
+                                            width: 1),
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: GetBuilder(
+                                          init: countryController,
+                                          builder: (controller) {
+                                            return DropdownWithSearch(
+                                              title: "City",
+                                              list: controller.cities,
+                                              onItemSelected: (selected) async {
+                                                selectedCity = selected;
+                                                setState(() {});
+                                              },
+                                            );
+                                          })),
+                                  Container(
+                                    width: screenWidth * 0.12,
+                                    // Dynamic width based on screen size
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.grey.shade500,
+                                          width: 1),
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+
+                                    child: TypeDropDown(
+                                      title: "Properties",
+                                      menu: menu,
+                                      onItemSelected: (List<String> selected) {
+                                        setState(() {
+                                          selectedLabel = selected[0];
+                                          selectedType = selected[1];
+                                        });
+                                      },
+                                    ),
                                   ),
+                                  // Bedroom
+                                  Container(
+                                    width: screenWidth * 0.12,
+                                    // Dynamic width based on screen size
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.grey.shade500,
+                                          width: 1),
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: CustomIntDropDown(
+                                      header: "bedroom",
+                                      list: [
+                                        ">0",
+                                        "1",
+                                        "2",
+                                        "3",
+                                        "4",
+                                        "5",
+                                        "6",
+                                        "7",
+                                        "8",
+                                        "9"
+                                      ],
+                                      title: "Bedrooms",
+                                      onItemSelected: (value) {
+                                        selectedBedRooms = value == ">0"
+                                            ? 0
+                                            : int.parse(value);
+                                      },
+                                    ),
+                                  ),
+                                  Container(
+                                    width: screenWidth * 0.12,
+                                    // Dynamic width based on screen size
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.grey.shade500,
+                                          width: 1),
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: CustomIntDropDown(
+                                      header: "price",
+                                      // list: [">0","1", "2", "3", "4", "5", "6", "7", "8", "9"],
+                                      list :[
+                                        ">0", "500", "1000", "5000", "10000", "50000", "100000", "500000", "1000000", "2000000",
+                                        "3000000", "4000000", "5000000", "6000000", "7000000", "8000000", "9000000", "10000000", "11000000", "12000000"
+                                      ],
+                                      flist : [
+                                        ">0", "1000", "5000", "10000", "50000", "100000", "500000", "1000000", "2000000", "3000000",
+                                        "4000000", "5000000", "6000000", "7000000", "8000000", "9000000", "10000000", "11000000", "12000000", "13000000", "14000000"
+                                      ],
+                                      title: "Price",
+
+                                      onItemSelected: (value) {
+                                        selectedIPrice = value == ">0" ? 0 : int.parse(value);
+                                      },
+                                      onItemFSelected: (value) {
+                                        selectedFPrice = value == ">0" ? 0 : int.parse(value);
+                                      },
+                                    ),
+                                  ),
+
                                   Container(
                                       width: screenWidth * 0.13,
                                       height: 50,
                                       child: ElevatedButton(
                                           onPressed: () {
-                                            // print(homeController.selectedStatus);
-
                                             Get.toNamed(AllRoutes.advancefilter,
                                                 parameters: {
                                                   "city" :selectedCity,
@@ -250,15 +308,13 @@ class _HomeHeaderState extends State<HomeHeader> {
                                                   "status": homeController.selectedStatus.value,
                                                   "type": selectedType,
                                                   "bedrooms":selectedBedRooms.toString(),
-                                                  "price": selectedPrice.toString(),
+                                                  "intialPrice": selectedIPrice.toString(),
+                                                  "finalPrice": selectedFPrice.toString(),
                                                 });
                                           },
                                           child: AutoSizeText(
                                             "Search",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium!
-                                                .copyWith(color: Colors.white),
+                                            style: buttontext,
                                           )))
                                 ],
                               ),
@@ -289,128 +345,6 @@ class _HomeHeaderState extends State<HomeHeader> {
     Get.rootController.restartApp();
   }
 }
-
-Widget buildDropdown(
-    double screenWidth,
-    String hint,
-    String currentValue,
-    List<String> items,
-    Function(String) onSelected,
-    BuildContext context, {
-      bool isEnabled = true,
-    }) {
-  // ScrollController for the dropdown list
-  ScrollController scrollController = ScrollController();
-
-  return Container(
-    // Container decoration with border and rounded corners
-    decoration: BoxDecoration(
-      border: Border.all(color: Colors.grey.shade500, width: 1),
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(8),
-    ),
-    alignment: Alignment.center,
-    width: screenWidth * 0.12, // Dynamic width based on screen size
-    height: 50,
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(left: 10),
-            child: Text(
-              currentValue.isEmpty ? hint : currentValue, // Display hint if no selection
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall!
-                  .copyWith(color: Colors.black),
-            ),
-          ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          alignment: Alignment.center,
-          child: PopupMenuButton<String>(
-            tooltip: "Choose $hint", // Tooltip for accessibility
-            onSelected: isEnabled ? onSelected : null, // Disable selection if not enabled
-            offset: Offset(0, 35), // Popup menu offset
-            itemBuilder: (BuildContext context) {
-              return [
-                PopupMenuItem<String>(
-                  child: SizedBox(
-                    width: screenWidth * 0.12, // Match width of the dropdown
-                    height: 200, // Set max height for dropdown list
-                    child: Scrollbar(
-                      controller: scrollController,
-                      thumbVisibility: true, // Always show scrollbar
-                      child: ListView(
-                        controller: scrollController,
-                        padding: EdgeInsets.zero,
-                        children: items.isEmpty
-                            ? [ // If no items, show a placeholder
-                          PopupMenuItem<String>(
-                            value: "",
-                            child: Text("No items available"),
-                          )
-                        ]
-                            : items.map((String item) {
-                          return PopupMenuItem<String>(
-                            value: item,
-                            child: Text(item),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
-                ),
-              ];
-            },
-            icon: Icon(
-              Icons.keyboard_arrow_down,
-              size: 22,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-
-Widget StatusButtons(String statusLabel, int active, BuildContext context) {
-  HomeController homeController = Get.find<HomeController>();
-
-  return InkWell(
-    onTap: () {
-      homeController.filterButton(active,statusLabel); // Update active filter\
-    },
-    child: Obx(() => Container(
-          alignment: Alignment.center,
-          width: 150,
-          decoration: BoxDecoration(
-            color: homeController.active == active
-                ? Colors.white
-                : Colors.blue.shade500.withOpacity(0.5),
-            borderRadius: BorderRadius.all(Radius.circular(8)),
-          ),
-          height: 50,
-          child: AutoSizeText(
-            statusLabel, // Use dynamic status label
-            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                  color: homeController.active == active
-                      ? Colors.black
-                      : whiteColor,
-                  fontWeight: FontWeight.w500,
-                ),
-          ),
-        )),
-  );
-}
-
 Widget filterTitles(
     {required double screenWidth,
     required BuildContext context,
@@ -418,8 +352,7 @@ Widget filterTitles(
   return Container(
       width: screenWidth * 0.13,
       height: 30,
-      child: AutoSizeText(
-        title,
-        style: Theme.of(context).textTheme.bodyMedium,
-      ));
+      child: AutoSizeText(title, style: subheading));
 }
+
+

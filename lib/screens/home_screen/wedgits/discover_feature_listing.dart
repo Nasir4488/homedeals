@@ -8,9 +8,11 @@ import 'package:hive/hive.dart';
 import 'package:homedeals/cores/homeController.dart';
 import 'package:homedeals/models/favorite_property.dart';
 import 'package:homedeals/models/property_model.dart';
+import 'package:homedeals/screens/home_screen/wedgits/propertyDetailsDialog.dart';
 import 'package:homedeals/screens/single_property/wedgits/export.dart';
 import 'package:homedeals/utils/colors.dart';
 import 'package:homedeals/utils/routes.dart';
+import 'package:homedeals/utils/textTheams.dart';
 
 class DiscoverProperty extends StatefulWidget {
   @override
@@ -23,6 +25,24 @@ class _DiscoverPropertyState extends State<DiscoverProperty> {
   Future<List<Property>> _fetchProperties() async {
     List<Property> properties = await homeController.searchProperties({"isfeatured": true});
     return homeController.properties;
+  }
+
+  Future<void> saveProperty(String id) async {
+    var box = Hive.box('propertyBox');
+    await box.put("propertyId", id);
+  }
+
+  void loadPropertyFromHive() async {
+    var box = await Hive.openBox('propertyBox');
+    var storedProperty = box.get('propertyId');
+    if (storedProperty != null) {
+      setState(() {
+        print(storedProperty);
+      });
+    } else {
+      // Handle the case when there's no property in Hive
+      print('No property found in Hive');
+    }
   }
 
   @override
@@ -64,18 +84,13 @@ class _DiscoverPropertyState extends State<DiscoverProperty> {
                 SizedBox(),
                 Text(
                   "Discover Our Featured Listings",
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyLarge!
-                      .copyWith(color: Colors.black,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0,
-                ),),
+                  style: textlarge,
+
+                ),
                 SizedBox(height: 5),
                 Text(
                   "Lorem ipsum dolor sit amet, consectetur adipisicing elit",
-                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                      letterSpacing: 1, fontWeight: FontWeight.w400, fontSize: 14),
+                  style: textmediam
                 ),
                 SizedBox(height: screenheight * 0.1),
                 Center(
@@ -110,7 +125,12 @@ class _DiscoverPropertyState extends State<DiscoverProperty> {
                             return Builder(
                               builder: (context) {
                                 return GestureDetector(
-                                  onTap: () => Get.toNamed(AllRoutes.singlePropertyScreen,arguments: property),
+                                  onTap: ()
+                                    {
+                                      saveProperty(property.id.toString());
+                                      loadPropertyFromHive();
+                                      Get.toNamed(AllRoutes.singlePropertyScreen);
+                                    },
                                   child: DiscoverListing(property: property),
                                 );
                               },
@@ -142,6 +162,8 @@ class DiscoverListing extends StatefulWidget {
 class _DiscoverListingState extends State<DiscoverListing> {
   bool isHovered = false;
   var homeController = Get.put(HomeController());
+
+
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
@@ -169,7 +191,6 @@ class _DiscoverListingState extends State<DiscoverListing> {
               children: [
                 SizedBox(height: 10),
                 GestureDetector(
-
                   child: Container(
                     width: Get.width,
                     height: Get.height * 0.35,
@@ -217,6 +238,42 @@ class _DiscoverListingState extends State<DiscoverListing> {
                   ),
                 ),
                 Positioned(
+                  top: 10,
+                  left: 20,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      alignment: Alignment.center,
+                      maximumSize: Size(90, 40),
+                      minimumSize: Size(80, 30), // Increase minimum height
+                      padding: EdgeInsets.zero, // Remove extra padding
+                      backgroundColor: Colors.green,
+                    ),
+                    onPressed: () {},
+                    child: Text(
+                      "Featured",
+                      style: TextStyle(color: Colors.white, fontSize: 12), // Reduce font size
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 10,
+                  right: 20,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      alignment: Alignment.center,
+                      maximumSize: Size(80, 40),
+                      minimumSize: Size(70, 30), // Increase minimum height
+                      padding: EdgeInsets.zero, // Remove extra padding
+                      backgroundColor: Colors.black.withOpacity(0.3),
+                    ),
+                    onPressed: () {},
+                    child: Text(
+                      widget.property.label,
+                      style: TextStyle(color: Colors.white, fontSize: 12), // Reduce font size
+                    ),
+                  ),
+                ),
+                Positioned(
                   bottom: 20,
                   left: 0,
                   right: 0,
@@ -235,37 +292,40 @@ class _DiscoverListingState extends State<DiscoverListing> {
                         ),
                         Row(
                           children: [
-                            InkWell(
-                              child: Container(
-                                height: 25,
-                                width: 25,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.6),
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: Icon(
-                                  Icons.remove_red_eye_outlined,
-                                  color: whiteColor,
-                                  size: 14,
-                                ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: Size(35, 35), // Ensure it doesn't shrink smaller
+                                maximumSize: Size(45, 45), // Fixed square size
+                                padding: EdgeInsets.zero, // Remove internal padding
+
+                              ),
+                              onPressed: () {
+                                showDialog(context: context, builder: (context)=>
+                                    PropertyDetailsDialog( property: widget.property,)
+                                );
+                              },
+                              child: Icon(
+                                Icons.remove_red_eye_outlined,
+                                color: whiteColor,
+                                size: 14, // Ensure icon fits within the button
                               ),
                             ),
+
                             SizedBox(width: 2),
 
                             SizedBox(width: 2),
-                            InkWell(
-                              child: Container(
-                                height: 25,
-                                width: 25,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.6),
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: Icon(
-                                  Icons.add,
-                                  color: whiteColor,
-                                  size: 14,
-                                ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: Size(35, 35), // Ensure it doesn't shrink smaller
+                                maximumSize: Size(45, 45), // Fixed square size
+                                padding: EdgeInsets.zero, // Remove internal padding
+
+                              ),
+                              onPressed: () {},
+                              child: Icon(
+                                Icons.add,
+                                color: whiteColor,
+                                size: 14, // Ensure icon fits within the button
                               ),
                             ),
                             SizedBox(width: 2),
@@ -285,19 +345,19 @@ class _DiscoverListingState extends State<DiscoverListing> {
                 children: [
                   SizedBox(height: 8),
                   Text(
-                    "${widget.property.type}",
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    "${widget.property.title}",
+                    style: textmediam,
                   ),
                   SizedBox(height: 6),
                   Text(
                     "${widget.property.address}",
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: textsmall,
                   ),
-                  SizedBox(height: 10),
+                  SizedBox(height: 6),
                   Row(
                     children: [
                       Text("${widget.property.bedrooms}",
-                          style: Theme.of(context).textTheme.bodySmall),
+                          style: textsmall,),
                       SizedBox(width: 1),
                       Icon(
                         Icons.bed_sharp,
@@ -306,7 +366,7 @@ class _DiscoverListingState extends State<DiscoverListing> {
                       SizedBox(width: 8),
                       Text(
                         "${widget.property.bathrooms}",
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: textsmall,
                       ),
                       SizedBox(width: 1),
                       Icon(
@@ -318,11 +378,11 @@ class _DiscoverListingState extends State<DiscoverListing> {
                   SizedBox(height: 6),
                   Text(
                     "${widget.property.label}",
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: textmediam
                   ),
-                  SizedBox(height: 15),
+                  SizedBox(height: 10),
                   Divider(),
-                  SizedBox(height: 15),
+                  SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

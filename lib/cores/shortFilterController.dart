@@ -5,6 +5,8 @@ import '../models/property_model.dart';
 
 class ShortFilterController extends gett.GetxController{
   List<Property> properties=[];
+  bool isLoading= false;
+
   Future<Options> _getOptionsWithAuth() async{
     return Options(
         headers: {
@@ -12,38 +14,38 @@ class ShortFilterController extends gett.GetxController{
         }
     );
   }
-
-  Future<List<Property>> searchProperties(Map<String,dynamic> filter) async {
+  /// **Searches properties based on filters and fetches results**
+  Future<List<Property>> searchProperties(Map<String, dynamic> filters) async {
 
     Dio dio = Dio();
-
     try {
-      var options = await _getOptionsWithAuth();
-      Response response = await dio.get(
-        options: options,
-        'http://localhost:3000/api/v1/properties/filter',
-        queryParameters: filter,
+      isLoading = true;
+      update(); // Notify UI that loading has started
 
+      Response response = await dio.get(
+        'http://localhost:3000/api/v1/properties/filter',
+        queryParameters: filters,
       );
+      print("Full API Response: ${response.data}");
+      print("Status Code: ${response.statusCode}");
+
       if (response.statusCode == 200) {
         var data = response.data['data'];
-        var results = response.data["results"];
         var propertiesList = data['properties'];
         if (propertiesList is List) {
-          properties=[];
-          for (var item in propertiesList) {
-            Property releatedProperties = Property.fromJson(item);
-            properties.add(Property.fromJson(item));
-          }
-          results=properties.length;
-          update();
-          return properties;
+          properties = propertiesList.map((item) => Property.fromJson(item)).toList();
+          update(); // Update UI with new properties before returning
+          return properties; // Now correctly returns the list
         }
       }
+
     } catch (e) {
-      print("Error: $e");
+      print("Error fetching properties: $e");
+    } finally {
+      isLoading = false;
+      update(); // Ensure UI updates after the process completes
     }
-    // Return an empty list in case of an error or no properties found
-    return [];
+    return []; // Return empty list if there's an error or no properties found
   }
+
 }

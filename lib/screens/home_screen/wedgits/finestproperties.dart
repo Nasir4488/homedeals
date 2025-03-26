@@ -100,11 +100,10 @@ class _CustomPropertyState extends State<CustomProperty> {
       child: InkWell(
         onTap: ()async{
           var box = Hive.box('propertyBox');
-          await box.put('selectedProperty', widget.property);
-          Get.toNamed(AllRoutes.singlePropertyScreen,arguments: widget.property);
+          await box.put('propertyId', widget.property.id);
+          Get.toNamed(AllRoutes.singlePropertyScreen,);
         },
         child: Container(
-
           width: double.infinity, // Ensures full width in the Wrap
           height: 300, // Fixed height for the property container
           child: Stack(
@@ -159,9 +158,7 @@ class _CustomPropertyState extends State<CustomProperty> {
                             child: Center(
                               child: Text(
                                 '${widget.property.status}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall!
+                                  style: textsmall!
                                     .copyWith(color: Colors.white),
                               ),
                             ),
@@ -171,18 +168,13 @@ class _CustomPropertyState extends State<CustomProperty> {
                       SizedBox(height: 4),
                       AutoSizeText(
                         "${widget.property.title}",
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium!
+                        style: textmediam
                             .copyWith(color: whiteColor),
                       ),
                       SizedBox(height: 4),
                       AutoSizeText(
                         "\$${widget.property.price.toString()}",
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium!
-                            .copyWith(fontWeight: FontWeight.w600, color: whiteColor),
+                        style:textmediam.copyWith(color: Colors.white),
                       ),
                       SizedBox(height: 4),
                       Row(
@@ -191,20 +183,14 @@ class _CustomPropertyState extends State<CustomProperty> {
                           SizedBox(width: 2),
                           Text(
                             "${widget.property.bedrooms.toString()}",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall!
-                                .copyWith(color: Colors.white),
+                            style: textsmall.copyWith(color: Colors.white),
                           ),
                           SizedBox(width: 6),
                           Icon(Icons.shower_outlined, color: Colors.white, size: 16),
                           SizedBox(width: 2),
                           Text(
                             "${widget.property.bathrooms}",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall!
-                                .copyWith(color: Colors.white),
+                            style: textsmall.copyWith(color: Colors.white),
                           ),
                           SizedBox(width: 6),
                           Icon(Icons.car_crash, color: Colors.white, size: 16),
